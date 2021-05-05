@@ -2613,11 +2613,13 @@ GC_INNER void GC_unmap(ptr_t start, size_t bytes)
       /* accidentally grabbing the same address space.                  */
       {
 #       if defined(AIX) || defined(CYGWIN32) || defined(HAIKU) \
-           || defined(HPUX)
+           || defined(HPUX) || defined(LINUX)
           /* On AIX, mmap(PROT_NONE) fails with ENOMEM unless the       */
           /* environment variable XPG_SUS_ENV is set to ON.             */
           /* On Cygwin, calling mmap() with the new protection flags on */
           /* an existing memory map with MAP_FIXED is broken.           */
+          /* On Linux, mmap() returns ENOMEM when hitting RLIMIT_AS,    */
+          /* even though the operation should release some memory.      */
           /* However, calling mprotect() on the given address range     */
           /* with PROT_NONE seems to work fine.                         */
           if (mprotect(start_addr, len, PROT_NONE))
