@@ -2560,9 +2560,11 @@ GC_INNER void GC_unmap(ptr_t start, size_t bytes)
       /* We immediately remap it to prevent an intervening mmap from    */
       /* accidentally grabbing the same address space.                  */
       {
-#       ifdef CYGWIN32
+#       if defined(CYGWIN32) || defined(LINUX)
           /* Calling mmap() with the new protection flags on an         */
           /* existing memory map with MAP_FIXED is broken on Cygwin.    */
+          /* On Linux, mmap() returns ENOMEM when hitting RLIMIT_AS,    */
+          /* even though the operation should release some memory.      */
           /* However, calling mprotect() on the given address range     */
           /* with PROT_NONE seems to work fine.                         */
           if (mprotect(start_addr, len, PROT_NONE))
